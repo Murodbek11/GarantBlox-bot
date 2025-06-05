@@ -20,8 +20,8 @@ async def start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(types.KeyboardButton("📝 Оставить отзыв"))
     await message.answer(
-        "Привет! 👋
-Здесь ты можешь оставить отзыв о работе гаранта GarantBlox.",
+        """Привет! 👋
+Здесь ты можешь оставить отзыв о работе гаранта GarantBlox.""",
         reply_markup=keyboard
     )
     @dp.message_handler(lambda message: message.text == "📝 Оставить отзыв")
