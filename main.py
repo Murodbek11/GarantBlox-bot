@@ -24,8 +24,7 @@ async def start(message: types.Message):
 Здесь ты можешь оставить отзыв о работе гаранта GarantBlox.",
         reply_markup=keyboard
     )
-
-@dp.message_handler(lambda message: message.text == "📝 Оставить отзыв")
+    @dp.message_handler(lambda message: message.text == "📝 Оставить отзыв")
 async def ask_feedback(message: types.Message):
     await message.answer("✍️ Напиши свой отзыв, и он будет опубликован в канале.")
 
