@@ -6,7 +6,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardMarkup, I
 from aiohttp import web
 from aiogram import Router
 
-TOKEN = "7377520849:AAFKMxzbjJfQfSc-SWI0QAFG7JzYWcax8bQ"  # <- Вставь сюда свой токен
+TOKEN = "7377520849:AAFlHxHOBI7NAykxrTIMyfWMbHaWKsCBVHY"  # <- Вставь сюда свой токен
 CHANNEL_ID = '@GarantBlox'  # убедись, что бот админ в этом канале
 ADMIN_ID = 1725224593  # Telegram user_id гаранта
 
