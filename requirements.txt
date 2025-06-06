@@ -1,2 +1,1 @@
-# Python 3.8+
-aiogram==2.24.1
+aiogram==2.25.2
