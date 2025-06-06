@@ -6,7 +6,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardMarkup, I
 from aiohttp import web
 from aiogram import Router
 
-TOKEN = "7377520849:AAF_v_w_u2f8NiITaNTMCJzEIHpFStYZPJc"
+TOKEN = "7377520849:AAH_itev0DoUULsyTL4mki8zecIBPtbMc3k"
 
 CHANNEL_ID = -1002567963097       # Основной канал @GarantBlox
 LOG_CHANNEL_ID = -1002664591140   # Лог-канал @GarantBlox_logs
