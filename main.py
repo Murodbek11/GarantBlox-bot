@@ -117,9 +117,8 @@ async def ask_review(message: types.Message):
 
 @dp.message_handler(state=ReviewState.waiting_for_review)
 async def save_review(message: types.Message, state: FSMContext):
-    user_info = f"ID: <code>{message.from_user.id}</code>
-Username: @{message.from_user.username or 'Без ника'}"
-    review_text = f"🗣 Новый отзыв:
+    user_info = f"ID: <code>{message.from_user.id}</code>\nUsername: @{message.from_user.username or 'Без ника'}"
+review_text = f"🗣 Новый отзыв:\n\n{message.text}\n\n👤 {user_info}"
 
 {message.text}
 
