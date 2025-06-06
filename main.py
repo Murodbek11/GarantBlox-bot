@@ -1,4 +1,5 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
@@ -6,7 +7,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardMarkup, I
 from aiohttp import web
 from aiogram import Router
 
-TOKEN = "7377520849:AAH_itev0DoUULsyTL4mki8zecIBPtbMc3k"
+TOKEN = "7377520849:AAF_v_w_u2f8NiITaNTMCJzEIHpFStYZPJc"
 
 CHANNEL_ID = -1002567963097       # Основной канал @GarantBlox
 LOG_CHANNEL_ID = -1002664591140   # Лог-канал @GarantBlox_logs
@@ -19,7 +20,7 @@ dp.include_router(router)
 
 orders = {}
 feedbacks = {}
-user_states = {}  # Для отслеживания состояния пользователя (например, ожидаем заказ)
+user_states = {}  # Для отслеживания состояния пользователя
 
 # Веб-хендлер для проверки, что сервер живой
 async def handle(request):
@@ -64,7 +65,6 @@ async def handle_text(message: Message):
     state = user_states.get(message.from_user.id)
 
     if not state:
-        # Игнорируем сообщения вне состояний или можно отправить подсказку
         return
 
     if state == "feedback":
@@ -169,9 +169,10 @@ async def handle_reject_feedback(callback: CallbackQuery):
 async def main():
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-    print("Webserver started at http://0.0.0.0:8080")
+    print(f"Webserver started at http://0.0.0.0:{port}")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
