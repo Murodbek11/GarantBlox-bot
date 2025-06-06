@@ -6,11 +6,11 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardMarkup, I
 from aiohttp import web
 from aiogram import Router
 
-TOKEN = "7377520849:AAF_v_w_u2f8NiITaNTMCJzEIHpFStYZPJc"
+TOKEN = "7377520849:AAEz3J_WmHV6kDOdpDaryoWVoVbdlSKKmLw"
 
 CHANNEL_ID = -1002567963097       # Основной канал @GarantBlox
 LOG_CHANNEL_ID = -1002664591140   # Лог-канал @GarantBlox_logs
-ADMIN_ID = 1725224593             # Telegram user_id гаранта
+ADMIN_ID = 1725224593  # Telegram user_id гаранта
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -19,8 +19,7 @@ dp.include_router(router)
 
 orders = {}
 feedbacks = {}
-user_states = {}       # Хранит состояния пользователей: awaiting_feedback, awaiting_order и т.п.
-order_categories = {}  # Хранит выбранные категории заказов по user_id
+user_states = {}  # Для отслеживания состояния пользователя (например, ожидаем заказ)
 
 # Веб-хендлер для проверки, что сервер живой
 async def handle(request):
@@ -39,44 +38,36 @@ async def start(message: Message):
         reply_markup=keyboard.as_markup(resize_keyboard=True)
     )
 
-@router.message(F.text == "📝 Оставить отзыв")
+@router.message(lambda message: message.text == "📝 Оставить отзыв")
 async def ask_feedback(message: Message):
-    user_states[message.from_user.id] = "awaiting_feedback"
+    user_states[message.from_user.id] = "feedback"
     await message.answer("✍️ Напиши свой отзыв, и он будет отправлен на модерацию.")
 
-@router.message(F.text == "📦 Сделать заказ гаранту")
-async def ask_order_category(message: Message):
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="Трейд редких предметов", callback_data="category:1"),
-            InlineKeyboardButton(text="Трейд аккаунтов", callback_data="category:2"),
-        ],
-    ])
-    await message.answer("📂 Выбери категорию заказа:", reply_markup=keyboard)
-
-@router.callback_query(F.data.startswith("category:"))
-async def category_chosen(callback: CallbackQuery):
-    category = callback.data.split(":")[1]
-    user_id = callback.from_user.id
-    order_categories[user_id] = category
-    user_states[user_id] = "awaiting_order"
-
-    category_names = {
-        "1": "Трейд редких предметов",
-        "2": "Трейд аккаунтов"
-    }
-
-    await callback.message.edit_text(f"Вы выбрали категорию: {category_names.get(category, 'Неизвестная')}. Теперь опиши, что хочешь заказать у гаранта.")
-    await callback.answer()
+@router.message(lambda message: message.text == "📦 Сделать заказ гаранту")
+async def ask_order(message: Message):
+    user_states[message.from_user.id] = "order"
+    example = (
+        "📋 Опиши, что хочешь заказать у гаранта.\n\n"
+        "Пример заказа:\n"
+        "Я — гарант, который помогает с безопасными сделками и поддержкой.\n"
+        "Опиши, что именно тебе нужно сделать или помочь.\n"
+        "Например:\n"
+        "- Помощь с обменом\n"
+        "- Проверка надежности игрока\n"
+        "- Сопровождение сделки\n\n"
+        "Укажи детали и желаемые сроки."
+    )
+    await message.answer(example)
 
 @router.message(F.text)
 async def handle_text(message: Message):
-    if message.reply_to_message:
-        return
-
     state = user_states.get(message.from_user.id)
 
-    if state == "awaiting_feedback":
+    if not state:
+        # Игнорируем сообщения вне состояний или можно отправить подсказку
+        return
+
+    if state == "feedback":
         feedback_id = f"{message.chat.id}_{message.message_id}"
         feedbacks[feedback_id] = {
             'from_id': message.from_user.id,
@@ -93,26 +84,18 @@ async def handle_text(message: Message):
 
         await bot.send_message(
             LOG_CHANNEL_ID,
-            f"📝 Новый отзыв от @{feedbacks[feedback_id]['username']}:\n\n{message.text}",
+            f"📝 Новый отзыв от @{message.from_user.username or 'Без ника'}:\n\n{message.text}",
             reply_markup=keyboard
         )
         await message.answer("📨 Спасибо! Твой отзыв отправлен на модерацию.")
         user_states.pop(message.from_user.id, None)
-        return
 
-    elif state == "awaiting_order":
-        user_id = message.from_user.id
-        category = order_categories.get(user_id, "Не указана")
-        category_names = {
-            "1": "Трейд редких предметов",
-            "2": "Трейд аккаунтов"
-        }
+    elif state == "order":
         order_id = f"{message.chat.id}_{message.message_id}"
         orders[order_id] = {
-            'from_id': user_id,
+            'from_id': message.from_user.id,
             'text': message.text,
-            'username': message.from_user.username or "Без ника",
-            'category': category_names.get(category, "Не указана")
+            'username': message.from_user.username or "Без ника"
         }
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -124,15 +107,11 @@ async def handle_text(message: Message):
 
         await bot.send_message(
             ADMIN_ID,
-            f"📦 Новый заказ (Категория: {orders[order_id]['category']}) от @{orders[order_id]['username']}:\n\n{message.text}",
+            f"📦 Новый заказ от @{orders[order_id]['username']}:\n\n{message.text}",
             reply_markup=keyboard
         )
         await message.answer("📨 Ваш заказ отправлен гаранту. Ожидайте ответа.")
-        user_states.pop(user_id, None)
-        order_categories.pop(user_id, None)
-        return
-
-    await message.answer("❗ Пожалуйста, выберите действие на клавиатуре перед отправкой сообщения.")
+        user_states.pop(message.from_user.id, None)
 
 @router.callback_query(F.data.startswith("accept_order:"))
 async def handle_accept_order(callback: CallbackQuery):
