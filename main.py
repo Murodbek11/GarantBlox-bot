@@ -7,7 +7,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from datetime import datetime
-import random
 
 # === CONFIG ===
 TOKEN = '7377520849:AAFH3Yt6JOzFYOwPkrzUfrzNLmnHqK-TaAA'
@@ -118,11 +117,7 @@ async def ask_review(message: types.Message):
 @dp.message_handler(state=ReviewState.waiting_for_review)
 async def save_review(message: types.Message, state: FSMContext):
     user_info = f"ID: <code>{message.from_user.id}</code>\nUsername: @{message.from_user.username or 'Без ника'}"
-review_text = f"🗣 Новый отзыв:\n\n{message.text}\n\n👤 {user_info}"
-
-{message.text}
-
-👤 {user_info}"
+    review_text = f"🗣 Новый отзыв:\n\n{message.text}\n\n👤 {user_info}"
     await bot.send_message(REVIEW_CHANNEL_ID, review_text, parse_mode="HTML")
     update_stat("reviews", 1)
     await message.answer("✅ Спасибо за отзыв!", reply_markup=main_keyboard())
@@ -149,8 +144,7 @@ async def handle_order(message: types.Message, state: FSMContext):
     )
     c.execute("SELECT user_id FROM admins")
     for (admin_id,) in c.fetchall():
-        await bot.send_message(admin_id, f"📥 Новый заказ #{order_id} от @{message.from_user.username or message.from_user.id}:
-{description}", reply_markup=keyboard)
+        await bot.send_message(admin_id, f"📥 Новый заказ #{order_id} от @{message.from_user.username or message.from_user.id}:\n{description}", reply_markup=keyboard)
     await message.answer("🕐 Заказ отправлен. Ожидайте ответа.", reply_markup=main_keyboard())
     await state.finish()
 
@@ -225,9 +219,7 @@ async def admin_panel(message: types.Message):
         c.execute("UPDATE stats SET completed_orders = CASE WHEN completed_orders > 0 THEN completed_orders - 1 ELSE 0 END WHERE id = 1")
     elif text == "📊 Статистика":
         reviews, completed = get_stats()
-        await message.answer(f"📈 Статистика:
-Отзывы: {reviews}
-Выполненные заказы: {completed}", reply_markup=admin_keyboard())
+        await message.answer(f"📈 Статистика:\nОтзывы: {reviews}\nВыполненные заказы: {completed}", reply_markup=admin_keyboard())
         conn.commit()
         return
     else:
@@ -239,9 +231,7 @@ async def admin_panel(message: types.Message):
 @dp.message_handler(lambda m: m.text == "📊 Статистика")
 async def show_stats(message: types.Message):
     reviews, completed = get_stats()
-    await message.answer(f"📈 Статистика:
-Отзывы: {reviews}
-Выполненные заказы: {completed}")
+    await message.answer(f"📈 Статистика:\nОтзывы: {reviews}\nВыполненные заказы: {completed}")
 
 @dp.message_handler(lambda m: m.text == "❓ FAQ")
 async def faq(message: types.Message):
