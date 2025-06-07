@@ -9,7 +9,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from datetime import datetime
 
 # === CONFIG ===
-TOKEN = '7377520849:AAFH3Yt6JOzFYOwPkrzUfrzNLmnHqK-TaAA'
+TOKEN = '7377520849:AAEWXWJsuSl03352ZB2M7rJGEEtpg8EU0qw'
 OWNER_ID = 1725224593
 REVIEW_CHANNEL_ID = -1002567963097
 
